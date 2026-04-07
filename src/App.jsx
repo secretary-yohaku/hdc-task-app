@@ -2,46 +2,58 @@ import { useState, useEffect } from "react";
 import {
   subscribeTasks,
   subscribeDailyCompletions,
+  subscribeTrash,
   addTask,
   updateTask,
   deleteTask,
   toggleDailyCompletion,
+  restoreTask,
+  permanentDeleteTask,
 } from "./utils/storage";
 import TaskBoard from "./components/TaskBoard";
 import DailyTasks from "./components/DailyTasks";
 import ChatworkParser from "./components/ChatworkParser";
 import Archive from "./components/Archive";
+import Trash from "./components/Trash";
 
 const TABS = [
   { id: "board", label: "📝 タスク" },
   { id: "daily", label: "📅 毎日タスク" },
   { id: "chatwork", label: "💬 Chatwork" },
   { id: "archive", label: "📦 アーカイブ" },
+  { id: "trash", label: "🗑️ ゴミ箱" },
 ];
 
 export default function App() {
   const [tab, setTab] = useState("board");
   const [tasks, setTasks] = useState([]);
   const [completions, setCompletions] = useState({});
+  const [trashItems, setTrashItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Firestoreからリアルタイム購読
   useEffect(() => {
     let ready = 0;
-    const done = () => { ready++; if (ready >= 2) setLoading(false); };
+    const done = () => { ready++; if (ready >= 3) setLoading(false); };
 
     const unsubTasks = subscribeTasks((t) => { setTasks(t); done(); });
     const unsubDaily = subscribeDailyCompletions((c) => { setCompletions(c); done(); });
+    const unsubTrash = subscribeTrash((t) => { setTrashItems(t); done(); });
 
     return () => {
       unsubTasks();
       unsubDaily();
+      unsubTrash();
     };
   }, []);
 
   const handleToggleTask = async (id) => {
     const task = tasks.find((t) => t.id === id);
     if (task) await updateTask(id, { completed: !task.completed });
+  };
+
+  const handleUpdateTask = async (id, data) => {
+    await updateTask(id, data);
   };
 
   const handleDeleteTask = async (id) => {
@@ -129,6 +141,7 @@ export default function App() {
             tasks={tasks}
             onToggle={handleToggleTask}
             onDelete={handleDeleteTask}
+            onUpdate={handleUpdateTask}
           />
         )}
         {tab === "daily" && (
@@ -139,6 +152,13 @@ export default function App() {
         )}
         {tab === "archive" && (
           <Archive tasks={tasks} onDelete={handleDeleteTask} />
+        )}
+        {tab === "trash" && (
+          <Trash
+            trashItems={trashItems}
+            onRestore={restoreTask}
+            onPermanentDelete={permanentDeleteTask}
+          />
         )}
       </div>
     </div>

@@ -25,9 +25,16 @@ export default defineConfig(({ mode }) => {
 
             try {
               const response = await fetch(
-                `https://api.chatwork.com/v2/rooms/${roomId}/messages?force=1`,
+                `https://api.chatwork.com/v2/rooms/${roomId}/messages?force=0`,
                 { headers: { 'X-ChatWorkToken': token } }
               );
+
+              if (response.status === 204) {
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 200;
+                res.end('[]');
+                return;
+              }
 
               const data = await response.text();
               res.setHeader('Content-Type', 'application/json');
