@@ -8,9 +8,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // force=0: 未読メッセージのみ取得（既読は返さない）
+    // force=1: 既読含め最新メッセージを取得（重複排除はアプリ側で実施）
     let response = await fetch(
-      `https://api.chatwork.com/v2/rooms/${roomId}/messages?force=0`,
+      `https://api.chatwork.com/v2/rooms/${roomId}/messages?force=1`,
       {
         headers: { "X-ChatWorkToken": token },
       }
