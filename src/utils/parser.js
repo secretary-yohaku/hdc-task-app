@@ -42,31 +42,33 @@ export function parseChatwork(text) {
       }
     }
 
-    // ブロック全体でどのキーワードにヒットするかチェック（1ブロック1キーワード1タスク）
-    const matchedKeywords = new Set();
+    // キーワードにヒットすれば専用タイトル、なければ汎用タイトル
+    let taskTitle = null;
     for (const line of lines) {
       for (const kw of KEYWORDS) {
         if (line.includes(kw.pattern)) {
-          matchedKeywords.add(kw);
+          taskTitle = kw.title;
+          break;
         }
       }
+      if (taskTitle) break;
     }
 
-    for (const kw of matchedKeywords) {
-      const name = parentName || findSender(lines);
-      results.push({
-        title: name
-          ? `${kw.title}【${name} 様】`
-          : `${kw.title}【保護者】`,
-        assignee: "未割当",
-        note: blockText,
-        category: "parent",
-        completed: false,
-        createdAt: new Date().toISOString(),
-        source: "chatwork",
-        senderName: name,
-      });
-    }
+    const name = parentName || findSender(lines);
+    const title = taskTitle || "💬 保護者連絡";
+
+    results.push({
+      title: name
+        ? `${title}【${name} 様】`
+        : `${title}【保護者】`,
+      assignee: "未割当",
+      note: blockText,
+      category: "parent",
+      completed: false,
+      createdAt: new Date().toISOString(),
+      source: "chatwork",
+      senderName: name,
+    });
   }
   return results;
 }
