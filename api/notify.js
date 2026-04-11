@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     const noDueTasks = tasks.filter((t) => !t.dueDate);
 
     // Chatworkメッセージ組み立て
-    let body = "[info][title]📋 本日のタスク一覧（15:00時点）[/title]";
+    let body = "[info][title]📋 本日のタスク一覧（11:00時点）[/title]";
 
     if (todayTasks.length > 0) {
       body += `⚡ 本日期限のタスク（${todayTasks.length}件）\n`;
